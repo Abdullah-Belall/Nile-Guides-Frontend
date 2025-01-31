@@ -1,0 +1,33 @@
+.mobileIcon:hover .three,
+.mobileIcon:hover .two {
+  width: 25px !important;
+}
+.activeMenuOne {
+  transform: rotate(45deg) translateY(12px) !important;
+}
+.activeMenuThree {
+  transform: rotate(-45deg) translateY(-12px) !important;
+}
+.activeMenuOne,
+.activeMenuThree {
+  width: 25px !important;
+  height: 4px !important;
+  background-color: #ae9460 !important;
+  border-radius: 6px !important;
+}
+@media (max-width: 639px) {
+  .activeMenuOne,
+  .activeMenuThree {
+    height: 2px !important;
+  }
+  .activeMenuOne {
+    transform: rotate(45deg) translateY(13px) !important;
+  }
+  .activeMenuThree {
+    transform: rotate(-45deg) translateY(-13px) !important;
+  }
+}
+
+.tickets:hover ul {
+  display: flex !important;
+}
