@@ -151,7 +151,7 @@ export default function EditProfileComponent({ params }: any) {
           return;
         }
       } else if (img.width < maxSize && img.height < maxSize) {
-        let newMaxSize = img.width > img.height ? img.height : img.width;
+        const newMaxSize = img.width > img.height ? img.height : img.width;
         const resizeImage = await ResizeImage(resizedFile, newMaxSize, newMaxSize);
         if (resizeImage.done) {
           resizedFile = resizeImage.file;
@@ -251,7 +251,7 @@ export default function EditProfileComponent({ params }: any) {
             return;
           }
         } else if (img.width < maxSize && img.height < maxSize) {
-          let newMaxSize = img.width > img.height ? img.height : img.width;
+          const newMaxSize = img.width > img.height ? img.height : img.width;
           const resizeImage = await ResizeImage(resizedFile, newMaxSize, newMaxSize);
           if (resizeImage.done) {
             resizedFile = resizeImage.file;
