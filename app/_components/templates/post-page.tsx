@@ -8,6 +8,8 @@ import {
   SERVER_COLLECTOR_REQ,
 } from "@/app/_utils/requests/server-requests-hub";
 import RateSection from "../server/rate-section";
+import maleAvatar from "@/public/maleAvatar.png";
+import femaleAvatar from "@/public/femaleAvatar.png";
 
 export default async function PostPage({ data, page, mostRated }: any) {
   const {
@@ -24,6 +26,12 @@ export default async function PostPage({ data, page, mostRated }: any) {
     worker: { first_name, last_name, avatar, gender, email, age },
   } = data;
   const getRateResponse = await SERVER_COLLECTOR_REQ(GET_RATE_SERVER_REQ, { id });
+    const imgCondition: any =
+    avatar && avatar !== "" && avatar !== "null"
+      ? `${BaseImagesLink}/uploads/${avatar}`
+      : gender === "male"
+      ? maleAvatar
+      : femaleAvatar;
   return (
     <div className="w-full px-mainX mb-6">
       <div className="flex flex-col md:flex-row md:gap-3 w-full">
@@ -74,7 +82,7 @@ export default async function PostPage({ data, page, mostRated }: any) {
           <Image
             className={`rounded-2xl`}
             fill
-            src={`${BaseImagesLink}/uploads/${avatar}`}
+            src={imgCondition}
             alt={"Worker " + first_name + " " + last_name}
           />
         </div>
