@@ -22,9 +22,7 @@ export default async function ClientsTickets({
       <>
         <div className="relative px-mainX min-h-dvh w-full">
           <PostsFilterBar param={"Active"} />
-          <div className="w-full flex flex-wrap gap-3 mt-2">
-            <TicketsDashboard data={response.data} currentUserRole="admin" />
-          </div>
+          <TicketsDashboard data={response.data} currentUserRole="admin" />
         </div>
         <Footer />
       </>
