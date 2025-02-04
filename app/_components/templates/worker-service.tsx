@@ -1,4 +1,5 @@
 "use client";
+import { checkDateStatus } from "@/app/_utils/common/functions";
 import { BOOK_ACTIONS_REQ, CLIENT_COLLECTOR_REQ } from "@/app/_utils/requests/client-requests-hub";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -27,28 +28,16 @@ export default function WorkerService({
   const [status_, setStatus] = useState(status);
   const [workerAccept_, setWorkerAccept] = useState(workerAccept);
   const [loading, setLoading] = useState(false);
-
-  const checkDateStatus = (inputDate: any) => {
-    const dateRegex = /^(\d{1,2}(\.\d{1,2})?)(AM|PM)\s(\d{1,2})-(\d{1,2})-(\d{4})$/;
-    const match = inputDate.match(dateRegex);
-    if (!match) {
-      console.log("Invalid date format. Use format like '4AM 25-12-2024' or '5.5PM 1-2-2025'.");
-    }
-    const [_, time, fraction, period, day, month, year] = match;
-    let hours = parseInt(time);
-    const minutes = fraction ? parseFloat(fraction) * 60 : 0;
-    if (period === "PM" && hours !== 12) {
-      hours += 12;
-    } else if (period === "AM" && hours === 12) {
-      hours = 0;
-    }
-    const date = new Date(year, month - 1, day, hours, minutes);
-    const now = new Date();
-    return date > now ? "pending" : workerAccept === "pending" ? "cancelled" : "done";
-  };
   useEffect(() => {
     if (status_ === "pending") {
-      setStatus(checkDateStatus(to.trim() + " " + day.trim()));
+      let finalStatus;
+      const checkDate = checkDateStatus(to.trim() + " " + day.trim());
+      if (!checkDate) {
+        finalStatus = workerAccept === "pending" || Number(clientPaid) <= 0 ? "cancelled" : "done";
+      } else {
+        finalStatus = "pending";
+      }
+      setStatus(finalStatus);
     }
   }, []);
   const handleChoice = async (choice: string) => {

@@ -14,6 +14,8 @@ import {
 } from "@/app/_utils/requests/client-requests-hub";
 import Footer from "@/app/_components/server/footer";
 import { states } from "@/app/_utils/common/arrayes";
+import { unCountedMessage } from "@/app/_utils/interfaces/main";
+import { BaseImagesLink } from "@/app/base";
 
 export default function ChangeRoleTicket() {
   const router = useRouter();
@@ -59,33 +61,30 @@ export default function ChangeRoleTicket() {
         setLoading(false);
         return;
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       setVaildationMessage("There is an error, please try again later.");
     }
     if (cardValue !== "") {
-      const DeleteResponse = await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-        fileName: cardValue,
-        type: "temporary-delete",
+      const DeleteResponse = await DELETE_IMAGE_REQ({
+        fileName: `temporary-uploads/${cardValue}`,
       });
       if (!DeleteResponse.done) {
-        setVaildationMessage(DeleteResponse.message);
+        setVaildationMessage(DeleteResponse?.message || unCountedMessage);
         setLoading(false);
         return;
       }
     }
     const formData = new FormData();
-    formData.append("image", file);
-
-    const response: any = await CLIENT_COLLECTOR_REQ(UPLOAD_IMAGE_REQ, {
-      formData,
-      type: "temporary-save",
-    });
+    formData.append("file", file);
+    formData.append("upload_preset", "mio_present");
+    formData.append("folder", "temporary-uploads");
+    const response: any = await UPLOAD_IMAGE_REQ({ formData });
     if (response.done) {
+      const fileName = response.filename.split("/")[1];
       if (cardType === "front") {
-        setFrontCard(response.filename);
+        setFrontCard(fileName);
       } else {
-        setBackCard(response.filename);
+        setBackCard(fileName);
       }
     } else {
       setVaildationMessage(response.message);
@@ -107,41 +106,42 @@ export default function ChangeRoleTicket() {
       return;
     }
     setLoading(true);
-    await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-      fileName: frontCard,
-      type: "temporary-delete",
+    await DELETE_IMAGE_REQ({
+      fileName: `temporary-uploads/${frontCard}`,
     });
-    await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-      fileName: backCard,
-      type: "temporary-delete",
+    await DELETE_IMAGE_REQ({
+      fileName: `temporary-uploads/${backCard}`,
     });
-
     let image1;
     let image2;
+
     const formData = new FormData();
-    formData.append("image", frontCardEle.current.files[0]);
-    const saveFrontResponse: any = await CLIENT_COLLECTOR_REQ(UPLOAD_IMAGE_REQ, {
-      formData,
-      type: "save",
-    });
+    formData.append("file", frontCardEle.current.files[0]);
+    formData.append("upload_preset", "mio_present");
+    formData.append("folder", "uploads");
+    const saveFrontResponse: any = await UPLOAD_IMAGE_REQ({ formData });
     if (!saveFrontResponse.done) {
       setLoading(false);
       setVaildationMessage(saveFrontResponse.message);
       return;
     }
-    image1 = saveFrontResponse.filename;
-    formData.delete("image");
-    formData.append("image", backCardEle.current.files[0]);
-    const saveBackResponse: any = await CLIENT_COLLECTOR_REQ(UPLOAD_IMAGE_REQ, {
-      formData,
-      type: "save",
-    });
+    // eslint-disable-next-line prefer-const
+    image1 = saveFrontResponse.filename.split("/")[1];
+    formData.delete("file");
+    formData.append("file", backCardEle.current.files[0]);
+    const saveBackResponse: any = await UPLOAD_IMAGE_REQ({ formData });
     if (!saveBackResponse.done) {
       setLoading(false);
       setVaildationMessage(saveBackResponse.message);
       return;
     }
-    image2 = saveBackResponse.filename;
+    if (!saveBackResponse.done) {
+      setLoading(false);
+      setVaildationMessage(saveBackResponse.message);
+      return;
+    }
+    // eslint-disable-next-line prefer-const
+    image2 = saveBackResponse.filename.split("/")[1];
     const response = await CLIENT_COLLECTOR_REQ(MAKE_TICKET_REQ, {
       type: `clients`,
       data: {
@@ -179,8 +179,8 @@ export default function ChangeRoleTicket() {
                 <Image
                   className={frontCard === "" ? "hidden" : ""}
                   fill
-                  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/temporary-uploads/${frontCard}`}
-                  alt="Post Image"
+                  src={`${BaseImagesLink}/temporary-uploads/${frontCard}`}
+                  alt={`Front side of id card`}
                 />
                 <div
                   className={`flex flex-col items-center justify-center pt-5 pb-6 ${
@@ -208,8 +208,8 @@ export default function ChangeRoleTicket() {
                 <Image
                   className={backCard === "" ? "hidden" : ""}
                   fill
-                  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/temporary-uploads/${backCard}`}
-                  alt="Post Image"
+                  src={`${BaseImagesLink}/temporary-uploads/${backCard}`}
+                  alt={`Back side of id card`}
                 />
                 <div
                   className={`flex flex-col items-center justify-center pt-5 pb-6 ${

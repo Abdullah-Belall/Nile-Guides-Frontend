@@ -2,8 +2,14 @@ import Image from "next/image";
 import BookNow from "../client/book-now";
 import StarsGenrator from "./stars-genrator";
 import Description from "../client/description";
+import { BaseImagesLink } from "@/app/base";
+import {
+  GET_RATE_SERVER_REQ,
+  SERVER_COLLECTOR_REQ,
+} from "@/app/_utils/requests/server-requests-hub";
+import RateSection from "../server/rate-section";
 
-export default function PostPage({ data }: any) {
+export default async function PostPage({ data, page, mostRated }: any) {
   const {
     id,
     title,
@@ -17,14 +23,15 @@ export default function PostPage({ data }: any) {
     raters_counter,
     worker: { first_name, last_name, avatar, gender, email, age },
   } = data;
+  const getRateResponse = await SERVER_COLLECTOR_REQ(GET_RATE_SERVER_REQ, { id });
   return (
-    <div className="w-full px-mainX">
+    <div className="w-full px-mainX mb-6">
       <div className="flex flex-col md:flex-row md:gap-3 w-full">
         <div className="flex flex-col w-full">
           <div className={"w-full h-[300px] relative rounded-xl pt-3 overflow-hidden"}>
             <Image
-              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image}`}
-              alt="World of Warcraft: Battle for Azeroth"
+              src={`${BaseImagesLink}/uploads/${image}`}
+              alt={title}
               layout="fill"
               objectFit="cover"
               priority={true}
@@ -48,12 +55,12 @@ export default function PostPage({ data }: any) {
               {title}
             </div>
             <Description desc={description} />
-            <div className="flex items-center">
-              <StarsGenrator rate={+rate} />
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <div className="flex gap-2">
+                <StarsGenrator rate={+rate} />
+              </div>
               <span className="w-1 h-1 mx-1.5 bg-secdark rounded-full"></span>
-              <a className="text-sm font-medium text-secdark underline hover:no-underline cursor-pointer">
-                {raters_counter} reviews
-              </a>
+              <a className="text-sm font-medium text-secdark">{raters_counter} reviews</a>
             </div>
           </div>
           <div className="mt-2 md:mt-5">
@@ -67,8 +74,8 @@ export default function PostPage({ data }: any) {
           <Image
             className={`rounded-2xl`}
             fill
-            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${avatar}`}
-            alt="worker avatar"
+            src={`${BaseImagesLink}/uploads/${avatar}`}
+            alt={"Worker " + first_name + " " + last_name}
           />
         </div>
         <div className="flex flex-col">
@@ -80,6 +87,13 @@ export default function PostPage({ data }: any) {
           <div className="text-secdark text-sm">{age} years old</div>
         </div>
       </div>
+      <RateSection
+        page={page}
+        mostRated={mostRated}
+        postId={id}
+        rate={getRateResponse.rate ?? 0}
+        text={getRateResponse.text}
+      />
     </div>
   );
 }

@@ -4,25 +4,20 @@ import { CLIENT_COLLECTOR_REQ, WORKER_POST_REQ } from "@/app/_utils/requests/cli
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ImSpinner } from "react-icons/im";
-export default function UpdatePostComponent({ params }: { params: { id: any } }) {
+export default function UpdatePostComponent({ params }: { params: Promise<{ id: any }> }) {
   const router = useRouter();
   const [data, setData] = useState<any>();
 
   useEffect(() => {
     async function GetData() {
       const params_ = await params;
-      try {
-        const response = await CLIENT_COLLECTOR_REQ(WORKER_POST_REQ, { id: params_.id });
-        console.log(response);
-        if (response?.data?.id) {
-          setData(response.data);
-        } else {
-          if (response.status === 401) {
-            router.replace("/log-in");
-          }
+      const response = await CLIENT_COLLECTOR_REQ(WORKER_POST_REQ, { id: params_.id });
+      if (response?.data?.id) {
+        setData(response.data);
+      } else {
+        if (response.status === 401) {
+          router.replace("/log-in");
         }
-      } catch (err) {
-        console.error(err);
       }
     }
     GetData();

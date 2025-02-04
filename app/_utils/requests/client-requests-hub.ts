@@ -11,8 +11,10 @@ import {
   UpdateUserDataInterface,
   VerifyEmailInterface,
 } from "../interfaces/main";
-const BASE_URL = "https://localhost:3000/api";
-//? PUBLIC REQUESTS
+import { BaseWebsiteLink } from "@/app/base";
+
+const BASE_URL = BaseWebsiteLink + "/api";
+//* PUBLIC REQUESTS
 const GET_POST_REQ = async (id: string): Promise<any> => {
   try {
     const response: any = await axios.get(`${BASE_URL}/post/${id}`);
@@ -31,7 +33,7 @@ const GET_POST_REQ = async (id: string): Promise<any> => {
     };
   }
 };
-//? AUTH REQUESTS (NO NEED FOR ACCESS_TOKENS MEAN THAT WE WILL NOT USE CLIENT_COLLECTOR_REQ())
+//* AUTH REQUESTS
 const SIGNUP_REQ = async (userPackage: SignUpInterface): Promise<ReqResInterface> => {
   try {
     const response: any = await axios.post(`${BASE_URL}/signup`, userPackage);
@@ -128,7 +130,48 @@ const FORGOT_PASSWORD_CONFIRMATION_REQ = async (
     };
   }
 };
-//? LOGGED USERS REQUESTS (NEED FOR ACCESS_TOKENS MEAN THAT WE WILL ALWAYES USE CLIENT_COLLECTOR_REQ())
+const LOGOUT_REQ = async (): Promise<ReqResInterface> => {
+  try {
+    const response: any = await axios.post(`${BASE_URL}/logout`);
+
+    if (response?.data?.done) setCookie("access_token", "LOGGED OUT");
+    return response?.data?.done
+      ? { done: true }
+      : { done: false, message: unCountedMessage, status: response.status };
+  } catch (error: any) {
+    let message = unCountedMessage;
+    if (error?.response?.status !== 400) {
+      message = error?.response?.data?.error?.message;
+    }
+    return {
+      done: false,
+      message: message,
+      status: error.status,
+    };
+  }
+};
+//* LOGGED USERS REQUESTS
+const REFRESH_TOKEN_REQ = async (): Promise<ReqResInterface> => {
+  try {
+    const response = await axios.get(`${BASE_URL}/refresh-token`);
+    if (response?.data?.access_token) {
+      setCookie("access_token", response?.data?.access_token);
+    }
+    return response?.data?.done
+      ? { done: true }
+      : { done: false, message: unCountedMessage, status: response.status };
+  } catch (error: any) {
+    let message = unCountedMessage;
+    if (error?.response?.status !== 400) {
+      message = error?.response?.data?.error?.message;
+    }
+    return {
+      done: false,
+      message: message,
+      status: error.status,
+    };
+  }
+};
 const PROFILE_REQ = async (): Promise<ProfileInterface> => {
   try {
     const response: any = await axios.get(`${BASE_URL}/profile`);
@@ -166,18 +209,11 @@ const EDIT_USER_DATA_REQ = async (data: UpdateUserDataInterface): Promise<ReqRes
     };
   }
 };
-const UPLOAD_IMAGE_REQ = async ({
-  formData,
-  type,
-}: {
-  formData: string;
-  type: "save" | "temporary-save";
-}): Promise<any> => {
+const UPLOAD_IMAGE_REQ = async ({ formData }: any): Promise<any> => {
   try {
-    const response: any = await axios.post(`${BASE_URL}/upload-image/${type}`, formData);
-
-    return response?.data?.filename
-      ? { done: true, filename: response?.data?.filename }
+    const response: any = await axios.post(`${BASE_URL}/upload-image`, formData);
+    return response?.data?.public_id
+      ? { done: true, filename: response?.data?.public_id }
       : { done: false, message: unCountedMessage, status: response.status };
   } catch (error: any) {
     let message = unCountedMessage;
@@ -191,37 +227,10 @@ const UPLOAD_IMAGE_REQ = async ({
     };
   }
 };
-const DELETE_IMAGE_REQ = async ({
-  fileName,
-  type,
-}: {
-  fileName: string;
-  type: "delete" | "temporary-delete";
-}): Promise<ReqResInterface> => {
+const DELETE_IMAGE_REQ = async ({ fileName }: { fileName: string }): Promise<ReqResInterface> => {
   try {
-    const response: any = await axios.delete(`${BASE_URL}/image/${fileName}/${type}`);
-
-    return response?.data?.done
-      ? { done: true }
-      : { done: false, message: unCountedMessage, status: response.status };
-  } catch (error: any) {
-    let message = unCountedMessage;
-    if (error?.response?.status !== 400) {
-      message = error?.response?.data?.error?.message;
-    }
-    return {
-      done: false,
-      message: message,
-      status: error.status,
-    };
-  }
-};
-const LOGOUT_REQ = async (): Promise<ReqResInterface> => {
-  try {
-    const response: any = await axios.post(`${BASE_URL}/logout`);
-
-    if (response?.data?.done) setCookie("access_token", "LOGGED OUT");
-    return response?.data?.done
+    const response: any = await axios.delete(`${BASE_URL}/delete-image?publicId=${fileName}`);
+    return response?.data?.deleted[fileName] === "deleted"
       ? { done: true }
       : { done: false, message: unCountedMessage, status: response.status };
   } catch (error: any) {
@@ -260,7 +269,7 @@ const MAKE_TICKET_REQ = async ({
     };
   }
 };
-//? CLIENTS REQUESTS
+//* CLIENTS REQUESTS
 const CLIENT_ORDERS_REQ = async (params?: { page?: string }): Promise<ProfileInterface> => {
   try {
     const response: any = await axios.get(`${BASE_URL}/clients/orders`, { params });
@@ -364,8 +373,27 @@ const STRIPE_CLIENT_SECRET_REQ = async (data: { amount: number }): Promise<any> 
     };
   }
 };
-
-//? WORKERS REQUESTS
+const RATE_POST_REQUESTS = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: { rate: number; text?: string };
+}) => {
+  try {
+    const response: any = await axios.post(`${BASE_URL}/clients/rate-post/${id}`, data);
+    return response?.data?.done
+      ? { done: true }
+      : { done: false, message: unCountedMessage, status: response.status };
+  } catch (error: any) {
+    return {
+      done: false,
+      message: error?.response?.data?.error?.message || unCountedMessage,
+      status: error.status,
+    };
+  }
+};
+//* WORKERS REQUESTS
 const WORKERS_SERVICES_REQ = async (params?: { page?: string }): Promise<ProfileInterface> => {
   try {
     const response: any = await axios.get(`${BASE_URL}/workers/services`, { params });
@@ -430,12 +458,10 @@ const UPDATE_POST_REQ = async ({
 }): Promise<ReqResInterface> => {
   try {
     const response: any = await axios.patch(`${BASE_URL}/workers/update-post/${id}`, data);
-    console.log("hereResponse", response);
     return response?.data?.done
       ? { done: true }
       : { done: false, message: unCountedMessage, status: response.status };
   } catch (error: any) {
-    console.log("hereerror", error);
     let message = unCountedMessage;
     if (error?.response?.status !== 400) {
       message = error?.response?.data?.error?.message;
@@ -472,7 +498,7 @@ const BOOK_ACTIONS_REQ = async ({
     };
   }
 };
-//! ADMINS REQUESTS
+//* ADMINS REQUESTS
 const DASHBOARD_POST_ACTIONS_REQ = async ({
   data,
   id,
@@ -620,28 +646,6 @@ const CLIENT_COLLECTOR_REQ = async (varFunction: any, dataBody?: any) => {
   }
   return response;
 };
-//* REFRESH_TOKEN_REQ
-const REFRESH_TOKEN_REQ = async (): Promise<ReqResInterface> => {
-  try {
-    const response = await axios.get(`${BASE_URL}/refresh-token`);
-    if (response?.data?.access_token) {
-      setCookie("access_token", response?.data?.access_token);
-    }
-    return response?.data?.done
-      ? { done: true }
-      : { done: false, message: unCountedMessage, status: response.status };
-  } catch (error: any) {
-    let message = unCountedMessage;
-    if (error?.response?.status !== 400) {
-      message = error?.response?.data?.error?.message;
-    }
-    return {
-      done: false,
-      message: message,
-      status: error.status,
-    };
-  }
-};
 //* COOKIES HANDLERS
 const setCookie = (keyName: string, value: string) => {
   document.cookie = `${keyName}=${value}; path=/; max-age=${15 * 60}; SameSite=Strict`;
@@ -652,36 +656,30 @@ const getCookie = (keyName: string): string | null => {
 };
 
 export {
-  //? AUTH ========
   SIGNUP_REQ,
   VERIFY_EMAIL_REQ,
   FORGOT_PASSWORD_REQ,
   FORGOT_PASSWORD_CONFIRMATION_REQ,
   LOGIN_REQ,
   LOGOUT_REQ,
-  //? MAIN FUNCTION ========
   CLIENT_COLLECTOR_REQ,
-  //? PUBLIC REQUESTS ========
   GET_POST_REQ,
-  //? LOGGED USERS ========
   PROFILE_REQ,
   EDIT_USER_DATA_REQ,
   UPLOAD_IMAGE_REQ,
   DELETE_IMAGE_REQ,
   MAKE_TICKET_REQ,
-  //? CLIENTS ========
   CLIENT_ORDERS_REQ,
   BOOK_REQ,
   CANCEL_BOOK_REQ,
   STRIPE_CLIENT_SECRET_REQ,
-  //? WORKERS ========
+  RATE_POST_REQUESTS,
   NEW_POST_REQ,
   UPDATE_POST_REQ,
   WORKERS_SERVICES_REQ,
   BOOK_ACTIONS_REQ,
   CONFIRM_BOOK_REQ,
   WORKER_POST_REQ,
-  //! ADMINS ========
   DASHBOARD_POST_ACTIONS_REQ,
   DASHBOARD_ONE_USER_REQ,
   DASHBOARD_CHANGE_ROLE_REQ,

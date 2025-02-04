@@ -11,6 +11,7 @@ import {
   DASHBOARD_CHANGE_ROLE_REQ,
 } from "@/app/_utils/requests/client-requests-hub";
 import { states } from "@/app/_utils/common/arrayes";
+import { BaseImagesLink } from "@/app/base";
 
 export default function UserPageDashbord({ data }: any) {
   const [role, setRole] = useState<undefined | string>();
@@ -110,7 +111,8 @@ export default function UserPageDashbord({ data }: any) {
     <>
       <div
         onClick={() => {
-          setOpenRolesStatesOverLay(false), setOpenBandOverLay(false);
+          setOpenRolesStatesOverLay(false);
+          setOpenBandOverLay(false);
         }}
         className={`${
           openRolesStatesOverLay || openBandOverLay ? "" : "hidden"
@@ -260,7 +262,7 @@ export default function UserPageDashbord({ data }: any) {
           height={120}
           src={
             data?.avatar
-              ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${data.avatar}`
+              ? `${BaseImagesLink}/uploads/${data.avatar}`
               : data?.gender === "male"
               ? maleAvatar
               : femaleAvatar

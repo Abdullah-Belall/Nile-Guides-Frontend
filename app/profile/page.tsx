@@ -12,15 +12,14 @@ import Reduirect from "../_components/client/rediruct";
 
 import { Metadata } from "next";
 import { unCountedMessage } from "../_utils/interfaces/main";
-import { BaseWebsiteLink } from "../base";
-
-let role: any;
-const ProfileResponse = await SERVER_COLLECTOR_REQ(PROFILE_SERVER_REQ);
-if (ProfileResponse.done) {
-  role = ProfileResponse.data.role;
-}
+import { BaseImagesLink, BaseWebsiteLink } from "../base";
 
 export async function generateMetadata(): Promise<Metadata> {
+  let role: any;
+  const ProfileResponse = await SERVER_COLLECTOR_REQ(PROFILE_SERVER_REQ);
+  if (ProfileResponse.done) {
+    role = ProfileResponse.data.role;
+  }
   const user = await ProfileResponse?.data;
   const roleTitle = role === "client" ? "Client" : role === "worker" ? "Tour Guide" : "Admin";
 
@@ -41,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: "Nile Guides",
       images: [
         {
-          url: process.env.NEXT_PUBLIC_BACKEND_URL + user?.avatar || "/logo.ico",
+          url: BaseImagesLink + user?.avatar || "/logo.ico",
           width: 800,
           height: 800,
           alt: `${user?.first_name}'s Profile Picture`,
@@ -59,6 +58,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Profile() {
+  let role: any;
+  const ProfileResponse = await SERVER_COLLECTOR_REQ(PROFILE_SERVER_REQ);
+  if (ProfileResponse.done) {
+    role = ProfileResponse.data.role;
+  }
   let data;
   const AllowedRoles = ["client", "worker"];
   if (AllowedRoles.includes(role)) {

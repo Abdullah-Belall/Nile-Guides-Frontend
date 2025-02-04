@@ -4,6 +4,7 @@ import {
   CLIENT_COLLECTOR_REQ,
   DASHBOARD_TICKET_ACTIONS_REQ,
 } from "@/app/_utils/requests/client-requests-hub";
+import { BaseImagesLink } from "@/app/base";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -65,12 +66,10 @@ export default function TicketsCard({
               <MdHideImage className="text-2xl" />
             ) : (
               <Image
-                onClick={() =>
-                  setOpen([`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image1}`, true])
-                }
+                onClick={() => setOpen([`${BaseImagesLink}/uploads/${image1}`, true])}
                 className="cursor-pointer"
                 fill
-                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image1}`}
+                src={`${BaseImagesLink}/uploads/${image1}`}
                 alt="ticket image one"
               />
             )}
@@ -80,12 +79,10 @@ export default function TicketsCard({
               <MdHideImage className="text-2xl" />
             ) : (
               <Image
-                onClick={() =>
-                  setOpen([`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image2}`, true])
-                }
+                onClick={() => setOpen([`${BaseImagesLink}/uploads/${image2}`, true])}
                 className="cursor-pointer"
                 fill
-                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image2}`}
+                src={`${BaseImagesLink}/uploads/${image2}`}
                 alt="ticket image two"
               />
             )}
@@ -95,12 +92,10 @@ export default function TicketsCard({
               <MdHideImage className="text-2xl" />
             ) : (
               <Image
-                onClick={() =>
-                  setOpen([`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image3}`, true])
-                }
+                onClick={() => setOpen([`${BaseImagesLink}/uploads/${image3}`, true])}
                 className="cursor-pointer"
                 fill
-                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image3}`}
+                src={`${BaseImagesLink}/uploads/${image3}`}
                 alt="ticket image three"
               />
             )}

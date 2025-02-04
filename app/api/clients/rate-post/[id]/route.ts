@@ -1,17 +1,19 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function DELETE(Req: Request, { params }: any) {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   const access_token = (await cookies()).get("access_token")?.value;
-  let unWrapParams = await params;
+  const { id } = await context.params;
   if (!access_token) NextResponse.json({ error: { message: "Unauthorized." } }, { status: 404 });
   try {
+    const body = await req.json();
     const backendResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/image/${unWrapParams.fileName}/${unWrapParams.type}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/clients/rate-business/${id}`,
       {
-        method: "DELETE",
+        method: "POST",
+        body: JSON.stringify(body),
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${access_token}`,
         },
       }
@@ -21,10 +23,11 @@ export async function DELETE(Req: Request, { params }: any) {
       return NextResponse.json({ error: data }, { status: backendResponse.status });
     }
     return NextResponse.json(data, { status: backendResponse.status });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: { message: error?.message || "Internal Server Error" } },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    let errorMessage = "Internal Server Error";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return NextResponse.json({ error: { message: errorMessage } }, { status: 500 });
   }
 }

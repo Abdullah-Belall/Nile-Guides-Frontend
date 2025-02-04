@@ -16,6 +16,8 @@ import {
 } from "@/app/_utils/requests/client-requests-hub";
 import { ResizeImage } from "@/app/_utils/common/functions";
 import { states } from "@/app/_utils/common/arrayes";
+import { unCountedMessage } from "@/app/_utils/interfaces/main";
+import { BaseImagesLink } from "@/app/base";
 
 export default function EditProfileComponent({ params }: any) {
   const router = useRouter();
@@ -85,15 +87,9 @@ export default function EditProfileComponent({ params }: any) {
   };
   async function handleUpload(event: any): Promise<string | undefined> {
     if (image) {
-      const DeleteOldAvatarResponse = await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-        fileName: image,
-        type: "temporary-delete",
+      await DELETE_IMAGE_REQ({
+        fileName: `temporary-uploads/${image}`,
       });
-      if (!DeleteOldAvatarResponse.done) {
-        setVaildationMessage(DeleteOldAvatarResponse.message);
-        setLoading(false);
-        return;
-      }
     }
 
     const file = event.target.files[0];
@@ -122,7 +118,6 @@ export default function EditProfileComponent({ params }: any) {
 
       const minSize = 128;
       const maxSize = 512;
-
       if (img.width < minSize || img.height < minSize) {
         setVaildationMessage(`The image dimensions must be at least ${minSize}x${minSize}px.`);
         setLoading(false);
@@ -137,8 +132,7 @@ export default function EditProfileComponent({ params }: any) {
           setLoading(false);
           return;
         }
-      }
-      if (img.height > maxSize && img.width <= maxSize) {
+      } else if (img.height > maxSize && img.width <= maxSize) {
         const resizeImage = await ResizeImage(resizedFile, img.width, img.width);
         if (resizeImage.done) {
           resizedFile = resizeImage.file;
@@ -147,8 +141,7 @@ export default function EditProfileComponent({ params }: any) {
           setLoading(false);
           return;
         }
-      }
-      if (img.height > maxSize && img.width > maxSize) {
+      } else if (img.height > maxSize && img.width > maxSize) {
         const resizeImage = await ResizeImage(resizedFile, maxSize, maxSize);
         if (resizeImage.done) {
           resizedFile = resizeImage.file;
@@ -157,30 +150,36 @@ export default function EditProfileComponent({ params }: any) {
           setLoading(false);
           return;
         }
+      } else if (img.width < maxSize && img.height < maxSize) {
+        let newMaxSize = img.width > img.height ? img.height : img.width;
+        const resizeImage = await ResizeImage(resizedFile, newMaxSize, newMaxSize);
+        if (resizeImage.done) {
+          resizedFile = resizeImage.file;
+        } else {
+          setVaildationMessage(`Can't resize this image to match the requirements.`);
+          setLoading(false);
+          return;
+        }
       }
-    } catch (error) {
+    } catch {
       setVaildationMessage("Failed to validate the image dimensions.");
       setLoading(false);
-      console.error(error);
       return;
     }
 
     const formData = new FormData();
-    formData.append("image", resizedFile);
-
-    const response: any = await CLIENT_COLLECTOR_REQ(UPLOAD_IMAGE_REQ, {
-      formData,
-      type: "temporary-save",
-    });
-
+    formData.append("file", resizedFile);
+    formData.append("upload_preset", "mio_present");
+    formData.append("folder", "temporary-uploads");
+    const response: any = await UPLOAD_IMAGE_REQ({ formData });
     if (response.done) {
-      setImage(response.filename);
+      setImage(response.filename.split("/")[1]);
     } else {
       setVaildationMessage(response.message);
     }
   }
 
-  const handleSend = async (e: any, file_: any) => {
+  const handleSend = async (e: any) => {
     e.preventDefault();
     if (loading) return;
     const condition =
@@ -219,7 +218,6 @@ export default function EditProfileComponent({ params }: any) {
 
         const minSize = 128;
         const maxSize = 512;
-
         if (img.width < minSize || img.height < minSize) {
           setVaildationMessage(`The image dimensions must be at least ${minSize}x${minSize}px.`);
           setLoading(false);
@@ -234,8 +232,7 @@ export default function EditProfileComponent({ params }: any) {
             setLoading(false);
             return;
           }
-        }
-        if (img.height > maxSize && img.width <= maxSize) {
+        } else if (img.height > maxSize && img.width <= maxSize) {
           const resizeImage = await ResizeImage(resizedFile, img.width, img.width);
           if (resizeImage.done) {
             resizedFile = resizeImage.file;
@@ -244,8 +241,7 @@ export default function EditProfileComponent({ params }: any) {
             setLoading(false);
             return;
           }
-        }
-        if (img.height > maxSize && img.width > maxSize) {
+        } else if (img.height > maxSize && img.width > maxSize) {
           const resizeImage = await ResizeImage(resizedFile, maxSize, maxSize);
           if (resizeImage.done) {
             resizedFile = resizeImage.file;
@@ -254,23 +250,32 @@ export default function EditProfileComponent({ params }: any) {
             setLoading(false);
             return;
           }
+        } else if (img.width < maxSize && img.height < maxSize) {
+          let newMaxSize = img.width > img.height ? img.height : img.width;
+          const resizeImage = await ResizeImage(resizedFile, newMaxSize, newMaxSize);
+          if (resizeImage.done) {
+            resizedFile = resizeImage.file;
+          } else {
+            setVaildationMessage(`Can't resize this image to match the requirements.`);
+            setLoading(false);
+            return;
+          }
         }
-      } catch (error) {
+      } catch {
         setVaildationMessage("Failed to validate the image dimensions.");
         setLoading(false);
-        console.error(error);
         return;
       }
       const formData = new FormData();
-      formData.append("image", resizedFile);
-      const transferAvatarResponse: any = await CLIENT_COLLECTOR_REQ(UPLOAD_IMAGE_REQ, {
-        formData,
-        type: "save",
-      });
-      if (transferAvatarResponse.done) {
-        finalImageSrc = transferAvatarResponse.filename;
+      formData.append("file", resizedFile);
+      formData.append("upload_preset", "mio_present");
+      formData.append("folder", "uploads");
+
+      const response: any = await UPLOAD_IMAGE_REQ({ formData });
+      if (response.done) {
+        finalImageSrc = response.filename.split("/")[1];
       } else {
-        setVaildationMessage(transferAvatarResponse.message);
+        setVaildationMessage(response.message);
         setLoading(false);
         return;
       }
@@ -300,16 +305,23 @@ export default function EditProfileComponent({ params }: any) {
       return;
     }
     if (image) {
-      await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-        fileName: image,
-        type: "temporary-delete",
+      const DeleteTemporaryAvatarResponse = await DELETE_IMAGE_REQ({
+        fileName: `temporary-uploads/${image}`,
       });
-
+      if (!DeleteTemporaryAvatarResponse.done) {
+        setVaildationMessage(DeleteTemporaryAvatarResponse?.message || unCountedMessage);
+        setLoading(false);
+        return;
+      }
       if (data.avatar !== "null") {
-        await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-          fileName: data?.avatar,
-          type: "delete",
+        const DeleteOldAvatarResponse = await DELETE_IMAGE_REQ({
+          fileName: `uploads/${image}`,
         });
+        if (!DeleteOldAvatarResponse.done) {
+          setVaildationMessage(DeleteOldAvatarResponse?.message || unCountedMessage);
+          setLoading(false);
+          return;
+        }
       }
     }
 
@@ -317,12 +329,8 @@ export default function EditProfileComponent({ params }: any) {
   };
   const defaultAvatar = gender === "female" ? femaleAvatar : maleAvatar;
   const imageCondition: any =
-    data.avatar !== "null"
-      ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${data.avatar}`
-      : defaultAvatar;
-  const imageSrc = image
-    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/temporary-uploads/${image}`
-    : imageCondition;
+    data.avatar !== "null" ? `${BaseImagesLink}/uploads/${data.avatar}` : defaultAvatar;
+  const imageSrc = image ? `${BaseImagesLink}/temporary-uploads/${image}` : imageCondition;
   return (
     <div className="w-full sm:w-[620px] px-mainX">
       <div className="w-full flex flex-col items-center p-3 bg-seclight rounded-lg shadow-md">
@@ -333,7 +341,7 @@ export default function EditProfileComponent({ params }: any) {
             width={120}
             height={120}
             src={imageSrc}
-            alt="Profile image"
+            alt={first_name !== "" ? first_name + " " + last_name : "User Image"}
           />
           <div className="flex justify-center items-center w-full h-full left-0 top-0 rounded-full bg-maindarkblur absolute opacity-0 hover:opacity-100 duration-200">
             <MdAddAPhoto />

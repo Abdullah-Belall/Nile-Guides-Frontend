@@ -9,6 +9,7 @@ import {
 } from "@/app/_utils/requests/client-requests-hub";
 import maleAvatar from "@/public/maleAvatar.png";
 import femaleAvatar from "@/public/femaleAvatar.png";
+import { BaseImagesLink } from "@/app/base";
 
 export default function WorkersPostsForDashboard({
   status,
@@ -47,7 +48,7 @@ export default function WorkersPostsForDashboard({
   };
   const imgCondition: any =
     workerAvatar && workerAvatar !== "" && workerAvatar !== "null"
-      ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${workerAvatar}`
+      ? `${BaseImagesLink}/uploads/${workerAvatar}`
       : workerGender === "male"
       ? maleAvatar
       : femaleAvatar;
@@ -83,7 +84,7 @@ export default function WorkersPostsForDashboard({
       </div>
       <div className="w-full flex gap-3 p-2 border-[1px] border-secdark rounded-2xl mt-3">
         <div className="w-[100px] h-[100px] border-2 border-maindark rounded-2xl relative">
-          <Image className={`rounded-2xl`} fill src={imgCondition} alt="worker avatar" />
+          <Image className={`rounded-2xl`} fill src={imgCondition} alt={`Worker ` + workerName} />
         </div>
         <div className="flex flex-col gap-2">
           <div className="text-maindark text-2xl font-semibold">{workerName}</div>

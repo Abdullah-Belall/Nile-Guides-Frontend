@@ -5,6 +5,7 @@ import femaleAvatar from "@/public/femaleAvatar.png";
 import styles from "@/app/ui/main-sec-profile.module.css";
 import { FaRegEdit } from "react-icons/fa";
 import { unCountedMessage } from "@/app/_utils/interfaces/main";
+import { BaseImagesLink } from "@/app/base";
 
 export default async function MainSecProfile({
   ProfileResponse,
@@ -15,7 +16,7 @@ export default async function MainSecProfile({
   if (ProfileResponse?.done) {
     const imgCondition: any =
       data?.avatar && data?.avatar !== "" && data?.avatar !== "null"
-        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${data?.avatar}`
+        ? `${BaseImagesLink}/uploads/${data?.avatar}`
         : data?.gender === "male"
         ? maleAvatar
         : femaleAvatar;
@@ -30,7 +31,7 @@ export default async function MainSecProfile({
                   className="rounded-lg aspect-square"
                   fill
                   src={imgCondition}
-                  alt="Helene avatar"
+                  alt={data?.first_name + " " + data?.last_name}
                 />
               </div>
               <div className="flex flex-wrap min-h-full gap-2 mt-4 w-[90%]">

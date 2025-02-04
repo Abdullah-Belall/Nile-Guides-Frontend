@@ -26,10 +26,10 @@ export const metadata: Metadata = {
     description:
       "View and manage your support tickets on Nile Guides. Submit new tickets for any issues or inquiries, and track their status with the admin team.",
     type: "website",
-    url: BaseWebsiteLink + "/profile", // Replace with your actual domain
+    url: BaseWebsiteLink + "/profile",
     images: [
       {
-        url: "/logo.ico", // Replace with your actual OG image URL
+        url: "/logo.ico",
         width: 1200,
         height: 630,
         alt: "Tickets - Nile Guides",
@@ -41,22 +41,21 @@ export const metadata: Metadata = {
     title: "Tickets | Nile Guides",
     description:
       "View and manage your support tickets on Nile Guides. Submit new tickets for any issues or inquiries, and track their status with the admin team.",
-    images: ["/logo.ico"], // Replace with your actual Twitter image URL
+    images: ["/logo.ico"],
   },
 };
 export default async function UsersTickets({
   params,
   searchParams,
 }: {
-  params: { role: "client" | "worker" };
-  searchParams: { page: number; status: string };
+  params: Promise<{ role: "client" | "worker" }>;
+  searchParams: Promise<{ page: number; status: string }>;
 }) {
   const unWrap = await params;
   const response = await SERVER_COLLECTOR_REQ(TICKETS_SERVER_REQ, {
     type: `${unWrap.role}s`,
     params: await searchParams,
   });
-  console.log(response);
   if (response.done) {
     return (
       <>

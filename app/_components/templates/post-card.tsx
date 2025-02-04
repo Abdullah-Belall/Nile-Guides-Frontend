@@ -1,6 +1,7 @@
 import Link from "next/link";
 import StarsGenrator from "./stars-genrator";
 import Image from "next/image";
+import { BaseImagesLink } from "@/app/base";
 
 export default function PostCard({
   id,
@@ -26,8 +27,8 @@ export default function PostCard({
           className="object-cover"
           fill
           objectFit="cover"
-          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${img}`}
-          alt="post image"
+          src={`${BaseImagesLink}/uploads/${img}`}
+          alt={title}
         />
       </Link>
       <div className="mt-4 px-5 pb-5">

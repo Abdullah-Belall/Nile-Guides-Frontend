@@ -2,6 +2,7 @@ import Image from "next/image";
 import maleAvatar from "@/public/maleAvatar.png";
 import femaleAvatar from "@/public/femaleAvatar.png";
 import Link from "next/link";
+import { BaseImagesLink } from "@/app/base";
 export default function UserCard({ avatar, name, role, email, gender, age }: any) {
   return (
     <div className="w-full bg-seclight shadow-md rounded-lg py-3">
@@ -12,7 +13,7 @@ export default function UserCard({ avatar, name, role, email, gender, age }: any
           height={128}
           src={
             avatar
-              ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${avatar}`
+              ? `${BaseImagesLink}/uploads/${avatar}`
               : gender === "male"
               ? maleAvatar
               : femaleAvatar

@@ -16,11 +16,15 @@ export default function MyPagination({
   };
   return (
     <Pagination
-      className="w-fit font-bold bg-seclight rounded-lg mx-auto mt-4 text-maindark"
+      className="w-fit font-bold bg-seclight rounded-lg mx-auto mt-4"
       page={pageNum ? Number(pageNum) : 1}
       onChange={handleGoTo}
       count={totalPages}
       shape="rounded"
+      sx={{
+        "& .MuiPaginationItem-root": { color: "#ae9460" },
+        "& .Mui-selected": { color: "#dfd6c5", backgroundColor: "#ae9460" },
+      }}
     />
   );
 }

@@ -6,13 +6,14 @@ import Image from "next/image";
 import Link from "next/link";
 import maleAvatar from "@/public/maleAvatar.png";
 import femaleAvatar from "@/public/femaleAvatar.png";
+import { BaseImagesLink } from "@/app/base";
 
 export default async function DynamicNavBarPart() {
   const response = await SERVER_COLLECTOR_REQ(PROFILE_SERVER_REQ);
   if (response?.done) {
     const imgCondition: any =
       response?.data?.avatar && response?.data?.avatar !== "" && response?.data?.avatar !== "null"
-        ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${response?.data?.avatar}`
+        ? `${BaseImagesLink}/uploads/${response?.data?.avatar}`
         : response?.data?.gender === "male"
         ? maleAvatar
         : femaleAvatar;
@@ -25,7 +26,7 @@ export default async function DynamicNavBarPart() {
           objectFit="cover"
           className="rounded-full border border-maindark"
           src={imgCondition}
-          alt=""
+          alt={response?.data?.first_name + ` ` + response?.data?.last_name}
         />
         <div className="font-medium">
           <div className={`text-sm sm:text-base text-secdark duration-300 cursor-pointer`}>

@@ -2,9 +2,10 @@
 import axios from "axios";
 import { ProfileInterface, RefreshTokenInterface, unCountedMessage } from "../interfaces/main";
 import { cookies } from "next/headers";
-
-const BASE_URL = "https://localhost:3000/api";
-//? ALLOWED FOR ANY USER (NO NEED FOR SERVER_COLLECTOR_REQ())
+import { BaseWebsiteLink } from "@/app/base";
+// NODE_TLS_REJECT_UNAUTHORIZED=0 npm run dev
+const BASE_URL = BaseWebsiteLink + "/api";
+//* PUBLIC REQUESTS
 const HOME_POSTS_SERVER_REQ = async (params?: {
   page?: string;
   gender?: string;
@@ -16,15 +17,25 @@ const HOME_POSTS_SERVER_REQ = async (params?: {
   maxPrice?: string;
 }) => {
   try {
-    const response: any = await axios.get(`${BASE_URL}/home-posts`, { params });
-    return response?.data?.data
-      ? { done: true, data: { ...response?.data } }
+    const queryParams = new URLSearchParams(params as Record<string, string>).toString();
+    const response = await fetch(`${BASE_URL}/home-posts?${queryParams}`, {
+      method: "GET",
+      next: { revalidate: 600 },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data?.data
+      ? { done: true, data: { ...data } }
       : { done: false, message: unCountedMessage, status: response.status };
   } catch (error: any) {
     return {
       done: false,
-      message: error?.response?.data?.error?.message || unCountedMessage,
-      status: error.status,
+      message: error?.message || unCountedMessage,
+      status: error?.status || 500,
     };
   }
 };
@@ -42,7 +53,44 @@ const GET_POST_SERVER_REQ = async ({ id }: { id: string }): Promise<any> => {
     };
   }
 };
-//? ALLOWED FOR ONLY LOGGED USER (NEED FOR SERVER_COLLECTOPR_REQ())
+const GET_POST_REVIEWS_SERVER_REQ = async ({
+  id,
+  params,
+}: {
+  id: string;
+  params?: { page?: number; mostRated?: boolean };
+}): Promise<any> => {
+  try {
+    const response: any = await axios.get(`${BASE_URL}/post/reviews/${id}`, { params });
+    return response?.data?.data
+      ? { done: true, data: { ...response?.data } }
+      : { done: false, message: unCountedMessage, status: response.status };
+  } catch (error: any) {
+    return {
+      done: false,
+      message: error?.response?.data?.error?.message || unCountedMessage,
+      status: error.status,
+    };
+  }
+};
+//* LOGGED USER REQUESTS
+const REFRESH_TOKEN_REQ = async (): Promise<RefreshTokenInterface> => {
+  const refresh_token = await getCookieServer(`refresh_token`);
+  try {
+    const response = await axios.get(`${BASE_URL}/refresh-token`, {
+      headers: { cookie: `refresh_token=${refresh_token};` },
+    });
+    return response?.data?.done
+      ? response?.data
+      : { done: false, message: unCountedMessage, status: response.status };
+  } catch (error: any) {
+    return {
+      done: false,
+      message: error?.response?.data?.error?.message || unCountedMessage,
+      status: error.status,
+    };
+  }
+};
 const USER_ROLE_SERVER_REQ = async ({ access_token }: { access_token: string }): Promise<any> => {
   try {
     const response: any = await axios.get(`${BASE_URL}/user-role`, {
@@ -110,7 +158,7 @@ const TICKETS_SERVER_REQ = async ({
     };
   }
 };
-//? CLIENTS REQUESTS
+//* CLIENTS REQUESTS
 const CLIENT_ORDERS_SERVER_REQ = async ({
   params,
   access_token,
@@ -135,7 +183,29 @@ const CLIENT_ORDERS_SERVER_REQ = async ({
     };
   }
 };
-//? WORKERS REQUESTS
+const GET_RATE_SERVER_REQ = async ({
+  id,
+  access_token,
+}: {
+  id: string;
+  access_token: string;
+}): Promise<any> => {
+  try {
+    const response: any = await axios.get(`${BASE_URL}/clients/get-rate/${id}`, {
+      headers: { cookie: `access_token=${access_token};` },
+    });
+    return response?.data?.done
+      ? response?.data
+      : { done: false, message: unCountedMessage, status: response.status };
+  } catch (error: any) {
+    return {
+      done: false,
+      message: error?.response?.data?.error?.message || unCountedMessage,
+      status: error.status,
+    };
+  }
+};
+//* WORKERS REQUESTS
 const WORKERS_POSTS_SERVER_REQ = async ({
   access_token,
 }: {
@@ -200,7 +270,7 @@ const WORKERS_SERVICES_DETAILS_SERVER_REQ = async ({
     };
   }
 };
-//! ALLOWED FOR ONLY ADMINS
+//* ADMINS REQUESTS
 const DASHBOARD_POSTS_SERVER_REQ = async ({
   access_token,
   params,
@@ -398,7 +468,7 @@ const DASHBOARD_USERS_TICKETS_SERVER_REQ = async ({
     };
   }
 };
-//* MAIN FUNCTION (USED FOR ALL REQUESTS THAT NEED ACCESS_TOKEN)
+//* MAIN FUNCTION
 const SERVER_COLLECTOR_REQ = async (varFunction: any, dataBody?: any) => {
   let access_token = await getCookieServer("access_token");
   if (!access_token) {
@@ -416,24 +486,6 @@ const SERVER_COLLECTOR_REQ = async (varFunction: any, dataBody?: any) => {
   }
   return response;
 };
-//* REFRESH_TOKEN_REQ
-const REFRESH_TOKEN_REQ = async (): Promise<RefreshTokenInterface> => {
-  const refresh_token = await getCookieServer(`refresh_token`);
-  try {
-    const response = await axios.get(`${BASE_URL}/refresh-token`, {
-      headers: { cookie: `refresh_token=${refresh_token};` },
-    });
-    return response?.data?.done
-      ? response?.data
-      : { done: false, message: unCountedMessage, status: response.status };
-  } catch (error: any) {
-    return {
-      done: false,
-      message: error?.response?.data?.error?.message || unCountedMessage,
-      status: error.status,
-    };
-  }
-};
 //* COOKIES HANDLER
 const getCookieServer = async (keyName: string): Promise<string | undefined> => {
   return (await cookies()).get(keyName)?.value;
@@ -445,8 +497,10 @@ export {
   WORKERS_POSTS_SERVER_REQ,
   TICKETS_SERVER_REQ,
   DASHBOARD_POSTS_SERVER_REQ,
+  GET_POST_REVIEWS_SERVER_REQ,
   USER_ROLE_SERVER_REQ,
   CLIENT_ORDERS_SERVER_REQ,
+  GET_RATE_SERVER_REQ,
   WORKERS_SERVICES_SERVER_REQ,
   WORKERS_SERVICES_DETAILS_SERVER_REQ,
   GET_POST_SERVER_REQ,

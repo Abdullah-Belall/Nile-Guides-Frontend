@@ -33,7 +33,6 @@ export default function PostsPageDashboard({
       next={() => NextPage()}
       hasMore={data_.length < data.total}
       loader={<h1 className="w-fit mx-auto text-secdark">Loading...</h1>}
-      endMessage={<h1 className="w-fit mx-auto text-secdark">No more posts</h1>}
     >
       {data.total > 0 ? (
         data_.map((business: any) => (

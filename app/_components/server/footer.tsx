@@ -7,45 +7,21 @@ export default function Footer() {
       <div className="mx-auto w-full p-4 py-6 lg:py-8">
         <div className="md:flex md:justify-between">
           <div className="mb-6 md:mb-0">
-            <a href="https://flowbite.com/" className="flex items-center">
-              <Image src={logoNoBac} className="w-[180px]" alt="FlowBite Logo" />
-            </a>
+            <Image src={logoNoBac} className="w-[180px]" alt="logo" />
           </div>
           <div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3">
             <div>
               <h2 className="mb-6 text-sm font-bold text-maindark uppercase">Resources</h2>
               <ul className="text-gray-500 dark:text-gray-400 font-medium">
-                <li className="mb-4">
-                  <a href="https://flowbite.com/" className="text-mainlight hover:underline">
-                    Flowbite
-                  </a>
-                </li>
-                <li>
-                  <a href="https://tailwindcss.com/" className="text-mainlight hover:underline">
-                    Tailwind CSS
-                  </a>
-                </li>
+                <li className="mb-4 text-mainlight hover:underline">Flowbite</li>
+                <li className="text-mainlight hover:underline">Tailwind CSS</li>
               </ul>
             </div>
             <div>
               <h2 className="mb-6 text-sm font-bold text-maindark uppercase">Follow us</h2>
               <ul className="text-gray-500 dark:text-gray-400 font-medium">
-                <li className="mb-4">
-                  <a
-                    href="https://github.com/themesberg/flowbite"
-                    className="text-mainlight hover:underline "
-                  >
-                    Github
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://discord.gg/4eeurUVvTy"
-                    className="text-mainlight hover:underline"
-                  >
-                    Discord
-                  </a>
-                </li>
+                <li className="mb-4 text-mainlight hover:underline">Github</li>
+                <li className="text-mainlight hover:underline">Discord</li>
               </ul>
             </div>
             <div>
@@ -56,16 +32,8 @@ export default function Footer() {
                     Report
                   </Link>
                 </li>
-                <li className="mb-4">
-                  <a href="#" className="text-mainlight hover:underline">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-mainlight hover:underline">
-                    Terms &amp; Conditions
-                  </a>
-                </li>
+                <li className="mb-4 text-mainlight hover:underline">Privacy Policy</li>
+                <li className="text-mainlight hover:underline">Terms &amp; Conditions</li>
               </ul>
             </div>
           </div>

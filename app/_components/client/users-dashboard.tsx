@@ -33,7 +33,6 @@ export default function UsersDashboard({
       next={() => NextPage()}
       hasMore={data_.length < data.total}
       loader={<h1 className="w-fit mx-auto text-secdark">Loading...</h1>}
-      endMessage={<h1 className="w-fit mx-auto text-secdark">No more users</h1>}
     >
       {!data_ || data.total == 0 ? (
         <h1

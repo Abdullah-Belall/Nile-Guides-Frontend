@@ -5,11 +5,12 @@ import { Metadata } from "next";
 import { BaseWebsiteLink } from "@/app/base";
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ page: number; mostRated: boolean }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const response = await GET_POST_SERVER_REQ({ id: params.id });
+  const response = await GET_POST_SERVER_REQ({ id: (await params).id });
 
   if (!response.done) {
     return {
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         post.description ||
         "Explore this post on Nile Guides to discover amazing tours and services.",
       type: "article",
-      url: BaseWebsiteLink + `/posts/${params.id}`,
+      url: BaseWebsiteLink + `/posts/${(await params).id}`,
       images: [
         {
           url: post.image || "/logo.ico",
@@ -53,10 +54,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function MainPostPage({ params }: Props) {
-  const response = await GET_POST_SERVER_REQ({ id: params.id });
+export default async function MainPostPage({ params, searchParams }: Props) {
+  const unWrap = await searchParams;
+  const response = await GET_POST_SERVER_REQ({ id: (await params).id });
   if (response.done) {
-    return <PostPage data={response.data} />;
+    return <PostPage mostRated={unWrap.mostRated} page={unWrap.page} data={response.data} />;
   } else {
     return <PostPageSkeleton />;
   }

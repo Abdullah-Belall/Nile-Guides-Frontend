@@ -15,6 +15,7 @@ import {
 import { unCountedMessage } from "@/app/_utils/interfaces/main";
 import MyButton from "./my-button";
 import { language_levels, languages, states } from "@/app/_utils/common/arrayes";
+import { BaseImagesLink } from "@/app/base";
 
 export default function PostForm({
   type,
@@ -92,33 +93,27 @@ export default function PostForm({
         setLoading(false);
         return;
       }
-    } catch (err) {
+    } catch {
       setValidationErr(unCountedMessage);
     }
-    if (data.image !== "") {
-      await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-        fileName: data.image,
-        type: data.image === dataForUpdate?.image ? "delete" : "temporary-delete",
+    if ((type === "Post" && data.image !== "") || data.image !== oldImage) {
+      await DELETE_IMAGE_REQ({
+        fileName: `temporary-uploads/${data.image}`,
       });
     }
-    if (type === "Post" || (data.image !== "" && dataForUpdate?.image !== data.image)) {
-      await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-        fileName: data.image,
-        type: "temporary-delete",
-      });
-    }
+
     const formData = new FormData();
-    formData.append("image", file);
-    const response: any = await CLIENT_COLLECTOR_REQ(UPLOAD_IMAGE_REQ, {
-      formData,
-      type: "temporary-save",
-    });
+    formData.append("file", file);
+    formData.append("upload_preset", "mio_present");
+    formData.append("folder", "temporary-uploads");
+    const response: any = await UPLOAD_IMAGE_REQ({ formData });
     if (response.done) {
-      handleInp("image", response.filename);
+      handleInp("image", response.filename.split("/")[1]);
     } else {
       setValidationErr(response.message);
     }
   };
+
   const vaildationChecker = () => {
     const { title, description, language, language_level, price, state, image } = data;
     if (title.length < 10) {
@@ -152,6 +147,7 @@ export default function PostForm({
     setValidationErr("");
     return true;
   };
+
   const handleSend = async (e: any) => {
     e.preventDefault();
     if (loading) return;
@@ -162,31 +158,25 @@ export default function PostForm({
     setLoading(true);
     const cloneData = { ...data, price: +data.price };
     if (type === "Update" && oldImage !== data.image) {
-      await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-        fileName: dataForUpdate.image,
-        type: "delete",
+      await DELETE_IMAGE_REQ({
+        fileName: `uploads/${dataForUpdate.image}`,
       });
     }
-    await CLIENT_COLLECTOR_REQ(DELETE_IMAGE_REQ, {
-      fileName: data.image,
-      type: "temporary-delete",
+    await DELETE_IMAGE_REQ({
+      fileName: `temporary-uploads/${data.image}`,
     });
-
     if (type === "Post" || oldImage !== data.image) {
       const formData = new FormData();
-      formData.append("image", imgEle.current.files[0]);
-      const saveImgResponse = await CLIENT_COLLECTOR_REQ(UPLOAD_IMAGE_REQ, {
-        formData,
-        type: "save",
-      });
-      if (!saveImgResponse.done) {
-        setValidationErr(saveImgResponse.message);
+      formData.append("file", imgEle.current.files[0]);
+      formData.append("upload_preset", "mio_present");
+      formData.append("folder", "uploads");
+      const response: any = await UPLOAD_IMAGE_REQ({ formData });
+      if (!response.done) {
+        setValidationErr(response.message);
         setLoading(false);
         return;
       }
-      console.log("this should apper");
-      console.log(saveImgResponse.filename);
-      cloneData.image = saveImgResponse.filename;
+      cloneData.image = response.filename.split("/")[1];
     }
     const response =
       type === "Post"
@@ -218,7 +208,7 @@ export default function PostForm({
               <Image
                 className={data.image === "" ? "hidden" : ""}
                 fill
-                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${
+                src={`${BaseImagesLink}/${
                   type === "Post" || data.image !== dataForUpdate.image ? "temporary-" : ""
                 }uploads/${data.image}`}
                 alt="Post Image"

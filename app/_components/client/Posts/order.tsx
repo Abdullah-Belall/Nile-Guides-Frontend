@@ -2,6 +2,7 @@
 import Footer from "@/app/_components/server/footer";
 import MyButton from "@/app/_components/templates/my-button";
 import { BOOK_REQ, CLIENT_COLLECTOR_REQ } from "@/app/_utils/requests/client-requests-hub";
+import { BaseImagesLink } from "@/app/base";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -57,13 +58,13 @@ export default function OrderNowComponent() {
   return (
     <>
       <div className="flex max-w-[640px] flex-col min-h-[calc(100dvh-94px)] gap-2 w-full px-mainX">
-        <div className="w-full flex flex-col bg-gradient-to-tr from-[#AE9460] to-[#cdbc9a] p-3 rounded-md">
+        <div className="w-full flex flex-col bg-gradient-to-tr from-[#AE9460] to-[#cdbc9a] p-3 rounded-xl">
           <div className="w-full aspect-video relative">
             <Image
               className="rounded-xl"
               fill
-              src={`https:localhost:5000/uploads/${paramsObject.image}`}
-              alt="worker avatar"
+              src={`${BaseImagesLink}/uploads/${paramsObject.image}`}
+              alt={paramsObject.title}
             />
           </div>
           <h1 className="text-anotherLight mt-2 px-2 font-bold flex justify-between">
