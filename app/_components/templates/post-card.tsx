@@ -43,7 +43,7 @@ export default function PostCard({
           </div>
         </div>
         <Link
-          href={`/posts/${id}/order`}
+          href={`/posts/${id}/order?title=${title}&image=${img}&price=${price}`}
           className="flex font-semibold items-center justify-center rounded-md duration-300 px-5 py-2.5 text-center text-sm font-medium text-mainlight hover:bg-mainlight hover:text-maindark border border-mainlight focus:outline-none focus:ring-4 focus:ring-blue-300"
         >
           Book now
